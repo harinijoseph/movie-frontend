@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home | Movie Recommender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <!-- Google Custom Search Script -->
+  <script async src="https://cse.google.com/cse.js?cx=f32fcce5fe92c4e54"></script>
+
+  <style>
+    :root {
+      --bg-color: rgba(0, 0, 0, 0.7);
+      --text-color: #ffffff;
+      --primary-color: #01b4e4;
+      --secondary-color: #032541;
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --hover-color: rgba(1, 180, 228, 0.4);
+    }
+    [data-theme="light"] {
+      --bg-color: #f8f9fa;
+      --text-color: #212529;
+      --primary-color: #0d6efd;
+      --secondary-color: #e9ecef;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --hover-color: rgba(13, 110, 253, 0.2);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--bg-color) 0%, rgba(3, 37, 65, 0.7) 100%), 
+                  url('https://image.tmdb.org/t/p/original/xDMIl84Qo5Tsu62c9DGWhmPI67A.jpg') no-repeat center center/cover;
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      transition: all 0.5s ease;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, transparent 0%, var(--bg-color) 70%);
+      z-index: -1;
+    }
+    h1 {
+      font-size: 3.5rem;
+      margin: 20px 0;
+      color: var(--primary-color);
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+      display: inline-block;
+    }
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 4px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+      color: var(--text-color);
+      position: relative;
+      display: inline-block;
+      padding-bottom: 10px;
+    }
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .theme-toggle i {
+      font-size: 1.2rem;
+    }
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      padding: 0 20px;
+    }
+    .hero {
+      text-align: center;
+      margin: 40px 0;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto 30px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.9);
+    }
+    [data-theme="light"] .hero p {
+      color: rgba(0,0,0,0.8);
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 50px;
+      max-width: 1200px;
+    }
+    .nav-item {
+      background-color: var(--card-bg);
+      padding: 20px 30px;
+      border-radius: 15px;
+      text-decoration: none;
+      color: var(--text-color);
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      max-width: 350px;
+      min-height: 100px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .nav-item:hover {
+      background-color: var(--hover-color);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .nav-item i {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+    }
+    .voice-search {
+      text-align: center;
+      margin: 40px 0;
+    }
+    #voiceBtn {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #0077b6 100%);
+      color: #fff;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #voiceBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    #voiceBtn i {
+      font-size: 1.4rem;
+    }
+    .section {
+      width: 100%;
+      margin: 60px 0;
+      padding: 0 20px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 30px;
+      justify-items: center;
+    }
+    .movie-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 220px;
+      color: var(--text-color);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px);
+    }
+    .movie-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+    .movie-card:hover .movie-poster::after {
+      opacity: 1;
+    }
+    .movie-poster {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+    }
+    .movie-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .movie-poster::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+    .movie-card:hover .movie-poster img {
+      transform: scale(1.1);
+    }
+    .movie-info {
+      padding: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    .movie-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .movie-info p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    [data-theme="light"] .movie-info p {
+      color: rgba(0,0,0,0.7);
+    }
+    .rating {
+      color: #ffc107;
+      font-weight: bold;
+    }
+    .gcse-search {
+      margin: 30px auto;
+      max-width: 600px;
+    }
+    .gcse-search input {
+      background: rgba(255,255,255,0.2) !important;
+      border: 1px solid rgba(255,255,255,0.3) !important;
+      color: white !important;
+      padding: 12px 20px !important;
+      border-radius: 50px !important;
+      backdrop-filter: blur(10px) !important;
+    }
+    [data-theme="light"] .gcse-search input {
+      background: rgba(255,255,255,0.9) !important;
+      border: 1px solid #ddd !important;
+      color: #333 !important;
+    }
+    .gcse-search button {
+      background: var(--primary-color) !important;
+      border-radius: 50px !important;
+      padding: 12px 25px !important;
+    }
+    .floating-bubbles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in;
+    }
+    .bubble:nth-child(1) {
+      width: 40px;
+      height: 40px;
+      left: 10%;
+      animation-duration: 8s;
+    }
+    .bubble:nth-child(2) {
+      width: 20px;
+      height: 20px;
+      left: 20%;
+      animation-duration: 5s;
+      animation-delay: 1s;
+    }
+    .bubble:nth-child(3) {
+      width: 50px;
+      height: 50px;
+      left: 35%;
+      animation-duration: 7s;
+      animation-delay: 2s;
+    }
+    .bubble:nth-child(4) {
+      width: 80px;
+      height: 80px;
+      left: 50%;
+      animation-duration: 11s;
+      animation-delay: 0s;
+    }
+    .bubble:nth-child(5) {
+      width: 35px;
+      height: 35px;
+      left: 55%;
+      animation-duration: 6s;
+      animation-delay: 1s;
+    }
+    .bubble:nth-child(6) {
+      width: 45px;
+      height: 45px;
+      left: 65%;
+      animation-duration: 8s;
+      animation-delay: 3s;
+    }
+    .bubble:nth-child(7) {
+      width: 25px;
+      height: 25px;
+      left: 75%;
+      animation-duration: 7s;
+      animation-delay: 2s;
+    }
+    .bubble:nth-child(8) {
+      width: 80px;
+      height: 80px;
+      left: 80%;
+      animation-duration: 6s;
+      animation-delay: 1s;
+    }
+    @keyframes float {
+      0% {
+        bottom: -100px;
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(100px);
+      }
+      100% {
+        bottom: 100vh;
+        transform: translateX(-200px);
+      }
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      h2 {
+        font-size: 1.8rem;
+      }
+      .nav-links {
+        flex-direction: column;
+        align-items: center;
+      }
+      .nav-item {
+        max-width: 100%;
+        min-height: auto;
+        padding: 15px 20px;
+      }
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+      }
+      .movie-poster {
+        height: 225px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-bubbles">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <i class="bi bi-moon-fill"></i> Theme
+  </button>
+
+  <div class="container">
+    <div class="hero animate__animated animate__fadeIn">
+      <h1>🎬 Movie Recommender</h1>
+      <p>Discover your next favorite movie with personalized recommendations, trending titles, and curated collections.</p>
+      
+      <!-- Google Custom Search Box -->
+      <div class="gcse-search"></div>
+    </div>
+
+    <nav class="nav-links">
+      <a class="nav-item animate__animated animate__fadeInUp" href="search_page.html" style="animation-delay: 0.1s">
+        <i class="bi bi-search"></i>
+        <div>
+          <h3>Search Movies</h3>
+          <p>Find any movie by title, actor, or director</p>
+        </div>
+      </a>
+      <a class="nav-item animate__animated animate__fadeInUp" href="movie_suggestions.html" style="animation-delay: 0.2s">
+        <i class="bi bi-film"></i>
+        <div>
+          <h3>Smart Suggestions</h3>
+          <p>Get personalized recommendations</p>
+        </div>
+      </a>
+    </nav>
+
+    <div class="voice-search animate__animated animate__fadeIn" style="animation-delay: 0.4s">
+      <button id="voiceBtn" onclick="startVoiceCommand()">
+        <i class="bi bi-mic-fill"></i> Voice Search
+      </button>
+    </div>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>🔥 Trending This Week</h2>
+        <p>See what everyone is watching right now</p>
+      </div>
+      <div id="trending" class="movies-grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>✨ Recommended For You</h2>
+        <p>Curated selections based on your tastes</p>
+      </div>
+      <div id="ai-recommendations" class="movies-grid"></div>
+    </section>
+  </div>
+
+  <script>
+    // Set initial theme
+    document.documentElement.setAttribute('data-theme', 'dark');
+    
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      
+      // Update button icon
+      const themeIcon = document.querySelector('.theme-toggle i');
+      themeIcon.className = newTheme === 'light' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+      
+      // Update button text
+      document.querySelector('.theme-toggle').innerHTML = 
+        `<i class="${newTheme === 'light' ? 'bi bi-sun-fill' : 'bi bi-moon-fill'}"></i> Theme`;
+    }
+
+    async function fetchTrending() {
+      try {
+        const res = await axios.get('https://api.themoviedb.org/3/trending/movie/week?api_key=fd63624ffe4ce8868bd42a144141ba75');
+        const movies = res.data.results.slice(0, 8);
+        const container = document.getElementById('trending');
+        container.innerHTML = movies.map(movie => `
+          <div class="movie-card">
+            <div class="movie-poster">
+              <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" 
+                   onerror="this.src='https://via.placeholder.com/500x750?text=No+Poster'" />
+            </div>
+            <div class="movie-info">
+              <h3>${movie.title}</h3>
+              <p><span class="rating">${movie.vote_average.toFixed(1)}</span> <i class="bi bi-star-fill"></i></p>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error fetching trending movies:', error);
+        document.getElementById('trending').innerHTML = 
+          '<p>Failed to load trending movies. Please try again later.</p>';
+      }
+    }
+
+    async function fetchAIRecommendations() {
+      try {
+        // In a real app, this would fetch personalized recommendations
+        // For demo, we'll use top rated movies
+        const res = await axios.get('https://api.themoviedb.org/3/movie/top_rated?api_key=fd63624ffe4ce8868bd42a144141ba75');
+        const movies = res.data.results.slice(0, 8);
+        const container = document.getElementById('ai-recommendations');
+        container.innerHTML = movies.map(movie => `
+          <div class="movie-card">
+            <div class="movie-poster">
+              <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}"
+                   onerror="this.src='https://via.placeholder.com/500x750?text=No+Poster'" />
+            </div>
+            <div class="movie-info">
+              <h3>${movie.title}</h3>
+              <p><span class="rating">${movie.vote_average.toFixed(1)}</span> <i class="bi bi-star-fill"></i></p>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        document.getElementById('ai-recommendations').innerHTML = 
+          '<p>Failed to load recommendations. Please try again later.</p>';
+      }
+    }
+
+    function startVoiceCommand() {
+      const voiceBtn = document.getElementById('voiceBtn');
+      voiceBtn.innerHTML = '<i class="bi bi-mic-mute-fill"></i> Listening...';
+      voiceBtn.style.background = 'linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%)';
+      
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.start();
+      
+      recognition.onresult = function(event) {
+        const query = event.results[0][0].transcript;
+        window.location.href = `search_page.html?query=${encodeURIComponent(query)}`;
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error', event.error);
+        voiceBtn.innerHTML = '<i class="bi bi-mic-fill"></i> Voice Search';
+        voiceBtn.style.background = 'linear-gradient(135deg, var(--primary-color) 0%, #0077b6 100%)';
+      };
+      
+      recognition.onend = function() {
+        voiceBtn.innerHTML = '<i class="bi bi-mic-fill"></i> Voice Search';
+        voiceBtn.style.background = 'linear-gradient(135deg, var(--primary-color) 0%, #0077b6 100%)';
+      };
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchTrending();
+      fetchAIRecommendations();
+      
+      // Add animation to movie cards when they come into view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      document.querySelectorAll('.movie-card').forEach(card => {
+        observer.observe(card);
+      });
+    });
+  </script>
+</body>
+</html>
