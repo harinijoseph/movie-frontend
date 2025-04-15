@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "serve ./template",
+    "build": "echo 'No build step required for static files'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
